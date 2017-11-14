@@ -30,7 +30,7 @@ std::ofstream log_file;
 void RenderElised(ros::Duration time_delay) {
   while(ros::ok()) {
     elised_->RenderLines(1);    
-    // elised_->LogClusters(1,log_file);    
+    elised_->LogClusters(1,log_file);    
     // elised_->Render(1);
     time_delay.sleep();
   }

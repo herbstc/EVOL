@@ -149,7 +149,6 @@ uint64_t time_vec_push=0, time_similarity=0, time_initialization = 0, time_load 
   EventNode * const node_neigh_10 = this->event_node_array_(node_root->data_.x,   node_root->data_.y-1);
   EventNode * const node_neigh_20 = this->event_node_array_(node_root->data_.x+1, node_root->data_.y-1);
   EventNode * const node_neigh_01 = this->event_node_array_(node_root->data_.x-1, node_root->data_.y);
-//  EventNode const *node_neigh_11 = this->event_node_array_(node_root->data_.x,   node_root->data_.y); // This is the root
   EventNode * const node_neigh_21 = this->event_node_array_(node_root->data_.x+1, node_root->data_.y);
   EventNode * const node_neigh_02 = this->event_node_array_(node_root->data_.x-1, node_root->data_.y+1);
   EventNode * const node_neigh_12 = this->event_node_array_(node_root->data_.x,   node_root->data_.y+1);
@@ -259,6 +258,12 @@ uint64_t time_vec_push=0, time_similarity=0, time_initialization = 0, time_load 
 //    }
 
   //  time_feature_set = toc("muted"); tic("nsec");
+    if(&(node_vec[0]->data_.timestamp) == nullptr) {
+      std::cout << "data field pointer of node_vec not pointing anywhere" << std::endl;
+      abort();
+    }
+    // Sort node_vec according to timestamp, ascending
+    std::sort(node_vec.begin(),node_vec.end(),EventNode::is_older);
     // Try to initialize a new feature if no neighbor features and enough candidates
     if (tree_vec.size()==0) {
       if (node_vec.size()>=min_candidate_cluster_) {
@@ -267,7 +272,7 @@ uint64_t time_vec_push=0, time_similarity=0, time_initialization = 0, time_load 
         EventTree* feature = this->InitializeFeature();
         EventTime new_timestamp = node_root->data_.timestamp; // Todo(ialzugaray): Quick hack to prevent pre-ordering of the vector -> might be not a good idea; Loses individual timestamp info
         for (EventNode* node: node_vec) {
-          node->data_.timestamp = new_timestamp; 
+          // node->data_.timestamp = new_timestamp; 
           this->AssignEvent(node,feature);
         }
 
@@ -326,14 +331,14 @@ uint64_t time_vec_push=0, time_similarity=0, time_initialization = 0, time_load 
     EventTime oldest_feature_time = oldest_feature->newest_timestamp();
     // Merge candidates to oldest cluster
     for (EventNode* node: node_vec) {
-      node->data_.timestamp = oldest_feature_time; // TOdo(fake as all the candidates has new timestamp according to the newest added event)
+      // node->data_.timestamp = oldest_feature_time; // TOdo(fake as all the candidates has new timestamp according to the newest added event)
       this->AssignEvent(node, oldest_feature);
     }
 
   //    time_assign = toc("muted"); tic("nsec");
   //    size_t old_size, new_size;
   //    old_size = oldest_feature->size();
-    oldest_feature->ForceThinning(ratio_limit_, (3.0 * oldest_feature->last_thinning_size())/4.0);
+    oldest_feature->ForceThinning(ratio_limit_, (0.5 * oldest_feature->last_thinning_size())/4.0);
   //  new_size = oldest_feature->size();
   //  time_thinning = toc("muted"); tic("nsec");
   //  std::cout << "Feature: " << time_feature_set << " \tMerge:" << time_merge<< " \tAssign:" << time_assign << " \tThinning: "<< "("<< old_size<<","<< new_size << ") " << time_thinning

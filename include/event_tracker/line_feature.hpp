@@ -332,7 +332,13 @@ inline void EventTree::Merge(EventTree* const &merged_tree) {
     this->head_node_->push_front(merged_tree->head_node_);
     this->head_node_ = merged_tree->head_node_;
   }
-
+  // Sort nodes of new tree according to timestamp
+  // std::sort(this->head_node_->children_node_list_.begin(),this->head_node_->children_node_list_.end(),EventNode::is_older);
+  // // Check if nodes are really ordered
+  // std::cout << "Timestamps: \n";
+  // for (EventNode* nIt : this->head_node->children_node_list_) {
+  //     std::cout << nIt->data_.timestamp << ", ";
+  // }
 
   // Add data associated to node distribution
   this->AddTreeData(merged_tree);
@@ -349,6 +355,7 @@ inline void EventTree::Merge(EventTree* const &merged_tree) {
   assert (this->head_node_!=nullptr);
   merged_tree->ClearChildData();
 
+  this->Add_last_thinning_size(merged_tree->last_thinning_size_);
   //TODO(ialzugaray): maybe it would be a good idea to transfer the last size in thinning from merged to new parent
 
   assert (this->head_node_!=nullptr);
@@ -387,6 +394,7 @@ inline void EventTree::TransferChildrenToNewParent(EventTree* const &new_parent)
   //TODO(ialzugaray): this should be done by moving the objects instead of copying&delete
   new_parent->children_tree_set_.insert(this->children_tree_set_.begin(),
                                         this->children_tree_set_.end());
+
   this->children_tree_set_.clear();
 }
 
@@ -427,13 +435,15 @@ inline void EventTree::ForceThinning(const float& max_minor,const size_t& min_no
   }
   ImageMoment temp_moment;
   size_t temp_size = 0;
-
+  size_t n = min_node;
+  // Keep at least the two newest nodes
+  if (n < 2) n = 2;
 
 //  float max_minor = 2;
   double ratio_theoretical;
 
 // for min_node times, add node data of newest children to temp_moment
-  for (temp_size = 0; temp_size<min_node; ++temp_size) {
+  for (temp_size = 0; temp_size<n; ++temp_size) {
     temp_moment.Add(node->data_.x, node->data_.y);
     node = node->pull_through(); // the function returns newest child of node, the statement therfore sets node as its newest child
     if (node==nullptr){
@@ -446,10 +456,11 @@ inline void EventTree::ForceThinning(const float& max_minor,const size_t& min_no
     temp_size++;
     temp_moment.Add(node->data_.x, node->data_.y);
     ratio_theoretical = max_minor/(temp_size/2.0);
+      // std::cout<<std::abs(sin(ImageMoment::GetAngle(temp_moment, temp_size) - atan2(node->data_.orientation.dy,node->data_.orientation.dx)))<<std::endl;
 
-    if (ImageMoment::GetAxisRatio(temp_moment, temp_size) > ratio_theoretical && node->parent_node() != nullptr) {
-    // if ((ImageMoment::GetAxisRatio(temp_moment, temp_size) > ratio_theoretical || abs(ImageMoment::GetAngle(temp_moment, temp_size) - atan2(node->data_.orientation.dy,node->data_.orientation.dx) - (3.14/4)) > (3.14/20)) && node->parent_node() != nullptr) { // Test for new line thinning metric
-      // std::cout<<"thinning"<<std::endl;
+    // if (ImageMoment::GetAxisRatio(temp_moment, temp_size) > ratio_theoretical && node->parent_node() != nullptr) {
+    if ((ImageMoment::GetAxisRatio(temp_moment, temp_size) > ratio_theoretical || std::abs((ImageMoment::GetAngle(temp_moment, temp_size) - atan2(node->data_.orientation.dy,node->data_.orientation.dx))) < 0.25) && node->parent_node() != nullptr) { // Test for new line thinning metric
+      
       // if(node->parent_node() == nullptr) {std::cout<<"SegFault on the way: parent_node is a nullptr"<<std::endl; abort();}
       temp_size--;
       temp_moment.Substract(node->data_.x, node->data_.y);

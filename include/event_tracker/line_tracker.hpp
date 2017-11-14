@@ -37,7 +37,6 @@ LineTracker<ROWS,COLS>::LineTracker() {
 
   // Rendering options
   cv::namedWindow("Lines", cv::WINDOW_NORMAL);
-  cv::namedWindow("Clusters", cv::WINDOW_NORMAL);
   line_img_ = cv::Mat(ROWS,COLS,CV_32FC3);
 }
 
