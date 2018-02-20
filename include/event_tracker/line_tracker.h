@@ -9,6 +9,7 @@
 #include <stack>
 #include <vector>
 #include <mutex>
+#include <queue>
 //#include <opencv2/core/core.hpp>
 
 #include "../event_tracker/common.hpp" //#include "event_tracker/common.hpp"
@@ -20,51 +21,50 @@ namespace event_tracker {
 
 
 
-template <uint16_t ROWS, uint16_t COLS>
-class LineTracker {
- public:
-  const size_t MAX_CLUSTERS = 20000;
+    template <uint16_t ROWS, uint16_t COLS>
+    class LineTracker {
+    public:
+        const size_t MAX_CLUSTERS = 20000;
 
-  LineTracker();
+        LineTracker();
 
-  inline bool AddEvent(const uint16_t& x,
-                               const uint16_t& y,
-                               const EventTime& timestamp,
-                               const bool &polarity
-                               ); // External interface
+        inline bool AddEvent(const uint16_t& x,
+                             const uint16_t& y,
+                             const EventTime& timestamp,
+                             const bool &polarity
+        ); // External interface
 
-  void Render(int delay=0);
-  void RenderLines(int delay=0);
-  void LogClusters(int delay, std::ofstream& cluster_log);
-  void FreeEmptyFeature();
-  inline void UpdateLineParams();
-
-
-  std::stack<EventTree*> feature_stack_;
-  std::vector<FeatureParams> active_feature_params_;
-
- protected:
-  std::mutex mutex_feature_stack_;
-  Eigen::Array<EventNode*, ROWS, COLS> event_node_array_;
-
-  std::vector<EventTree*> active_feature_; // Active features;
-  // cv::Mat cluster_img_; // Visualization / debug
-  cv::Mat line_img_;
+        void Render(int delay=0);
+        void RenderLines(int delay=0);
+        void LogClusters(int delay, std::ofstream& cluster_log);
+        void FreeEmptyFeature();
+        inline void UpdateLineParams();
 
 
+        std::queue<EventTree*> feature_stack_;
+        std::vector<FeatureParams> active_feature_params_;
 
-  inline void AssignEvent(EventNode* const &event_node,
-                          EventTree* feature);
-  inline void RemoveEvent(EventNode* const &event_node);
+    protected:
+        std::mutex mutex_feature_stack_;
+        Eigen::Array<EventNode*, Eigen::Dynamic, Eigen::Dynamic> event_node_array_;
+        std::vector<EventTree*> active_feature_; // Active features;
+        // cv::Mat cluster_img_; // Visualization / debug
+        cv::Mat line_img_;
 
-  inline EventTree* InitializeFeature();
-  inline void FreeFeature(EventTree* const &feature);
+
+
+        inline void AssignEvent(EventNode* const &event_node,
+                                EventTree* feature);
+        inline void RemoveEvent(EventNode* const &event_node);
+
+        inline EventTree* InitializeFeature();
+        inline void FreeFeature(EventTree* const &feature);
 
 //  inline void ForceRemoveEvent(EventInfo<ROWS*COLS>* event_info);
 
 
 
 
-};
-} // namesapce event_tracker
+    };
+} // namespace event_tracker
 #endif // LINE_TRACKER_H

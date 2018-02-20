@@ -38,7 +38,7 @@ class Elised : public LineTracker<ROWS,COLS> {
 
 
  private:
-  Eigen::Array<EventTime, ROWS, COLS> time_array_;
+  Eigen::Array<EventTime, Eigen::Dynamic, Eigen::Dynamic> time_array_;
   std::list<EventNode*> global_buffer_;
 
   // Parameters

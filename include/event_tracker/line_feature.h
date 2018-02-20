@@ -184,6 +184,8 @@ private:
   inline void AddTreeData(const EventTree* const &tree);
   inline void RemoveTreeData(const EventTree* const &tree);
   inline void TransferChildrenToNewParent(EventTree* const &new_parent);
+  inline void Add_last_thinning_size(size_t& add_size_){assert(this->is_top_tree()); this->last_thinning_size_ += add_size_;}
+
 };
 
 

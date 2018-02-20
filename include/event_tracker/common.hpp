@@ -13,7 +13,7 @@ typedef size_t EventKey;
 const EventTime INVALID_TIME = 0; // Assume no timestamp will be 0 -> origin of time;
 
 struct OrientationVector  {
-  float dx, dy;
+  float dx, dy, m; // m is the magnitude
 
   inline bool isNormBounded() const {
     return  std::sqrt((dx*dx + dy*dy))<=1.001;
@@ -38,6 +38,7 @@ struct OrientationVector  {
     if (norm!=0) {
       dx = _dx/norm;
       dy = _dy/norm;
+      m = norm;
       return true;
     } else {
       return false;

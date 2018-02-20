@@ -11,14 +11,14 @@ namespace event_tracker {
 
 // =============== Node =====================
 EventNode::EventNode(uint16_t x, uint16_t y) : data_(x,y), parent_node_(nullptr) {
-  children_node_list_.clear(); // Todo(ialzugaray): this should be unncessary
+  children_node_list_.clear(); // Todo(ialzugaray): this should be unnecessary
 }
 
 inline void EventNode::push_front(EventNode* node){
   //assert(node->is_isolated()); // It should be cleared beforehand // Not. We can pushback nodes with children and therefore no isolated
   assert(node->is_head()); // It should be head of any tree
   assert(this->is_head()); // Only can be pushed in front of head nodes
-  assert(is_newer_eq(node, this)); // The tree maintain the order when setting a new head (Or equal)
+  assert(is_newer_eq(node, this)); //The tree maintain the order when setting a new head (Or equal)
   node->children_node_list_.push_front(this);
   this->parent_node_ = node;
 }
@@ -349,6 +349,7 @@ inline void EventTree::Merge(EventTree* const &merged_tree) {
   assert (this->head_node_!=nullptr);
   merged_tree->ClearChildData();
 
+  this->Add_last_thinning_size(merged_tree->last_thinning_size_);
   //TODO(ialzugaray): maybe it would be a good idea to transfer the last size in thinning from merged to new parent
 
   assert (this->head_node_!=nullptr);
@@ -427,13 +428,15 @@ inline void EventTree::ForceThinning(const float& max_minor,const size_t& min_no
   }
   ImageMoment temp_moment;
   size_t temp_size = 0;
-
+  size_t n = min_node;
+  // Keep at least the two newest nodes
+  if (n < 2) n = 2;
 
 //  float max_minor = 2;
   double ratio_theoretical;
 
 // for min_node times, add node data of newest children to temp_moment
-  for (temp_size = 0; temp_size<min_node; ++temp_size) {
+  for (temp_size = 0; temp_size<n; ++temp_size) {
     temp_moment.Add(node->data_.x, node->data_.y);
     node = node->pull_through(); // the function returns newest child of node, the statement therfore sets node as its newest child
     if (node==nullptr){

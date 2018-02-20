@@ -2,7 +2,6 @@ cmake_minimum_required(VERSION 2.8.8)
 project(evol)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -O3 -march=native" )
 
-
 # search for everything we need to build the package
 find_package(catkin REQUIRED COMPONENTS
   roscpp
@@ -17,7 +16,7 @@ find_package(OpenCV REQUIRED)
 find_package(Eigen REQUIRED)
 
 
-# export the dependencis of this package for who ever depends on us
+# export the dependencies of this package for who ever depends on us
 catkin_package(
   INCLUDE_DIRS 
   	include
